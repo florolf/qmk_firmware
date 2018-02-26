@@ -1,155 +1,399 @@
 #include "ergodox.h"
+#include "led.h"
 #include "debug.h"
 #include "action_layer.h"
-#include "version.h"
+#include "action_util.h"
 
-#define BASE 0 // default layer
-#define SYMB 1 // symbols
-#define MDIA 2 // media keys
+#define BASE   0 // default layer
+#define SYMB   1 // symbols layer
+#define MDIA   2 // media layer
+#define SPEC   3 // special layer
+
+#define LSymb 10 // left symbol-shift key
+#define LMdia 11 // left media-shift key
+#define LSpec 12 // left special-shift key
+#define RSymb 13 // right symbol-shift key
+#define RMdia 14 // right media-shift key
+#define RSpec 15 // right special-shift key
+
+#define MUL   20 // mouse up left
+#define MUR   21 // mouse up right
+#define MDL   22 // mouse down left
+#define MDR   23 // mouse down right
+
+/*
+ * The Ordinary Layout for the Ergodox EZ keyboard, v4.20
+ *
+ * Modifications from default by Nicholas Keene ergodoxez@nicholaskeene.com
+ *
+ * No rights reserved. This software is in the public domain.
+ * Credit me if you are friendly but if you're a jerk don't bother.
+ * If you use or modify this layout I would love to hear from you.
+ *
+ * Details: readme.md
+ *          https://github.com/nrrkeene/qmk_firmware/tree/master/keyboards/ergodox/keymaps/ordinary
+ */
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-/* Keymap 0: Basic layer
+
+/******* Base Layer ****************************************************************************************************
  *
- * ,--------------------------------------------------.           ,--------------------------------------------------.
- * |   =    |   1  |   2  |   3  |   4  |   5  | LEFT |           | RIGHT|   6  |   7  |   8  |   9  |   0  |   -    |
- * |--------+------+------+------+------+-------------|           |------+------+------+------+------+------+--------|
- * | Del    |   Q  |   W  |   E  |   R  |   T  |  L1  |           |  L1  |   Y  |   U  |   I  |   O  |   P  |   \    |
- * |--------+------+------+------+------+------|      |           |      |------+------+------+------+------+--------|
- * | BkSp   |   A  |   S  |   D  |   F  |   G  |------|           |------|   H  |   J  |   K  |   L  |; / L2|' / Cmd |
- * |--------+------+------+------+------+------| Hyper|           | Meh  |------+------+------+------+------+--------|
- * | LShift |Z/Ctrl|   X  |   C  |   V  |   B  |      |           |      |   N  |   M  |   ,  |   .  |//Ctrl| RShift |
- * `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
- *   |Grv/L1|  '"  |AltShf| Left | Right|                                       |  Up  | Down |   [  |   ]  | ~L1  |
- *   `----------------------------------'                                       `----------------------------------'
- *                                        ,-------------.       ,-------------.
- *                                        | App  | LGui |       | Alt  |Ctrl/Esc|
- *                                 ,------|------|------|       |------+--------+------.
- *                                 |      |      | Home |       | PgUp |        |      |
- *                                 | Space|Backsp|------|       |------|  Tab   |Enter |
- *                                 |      |ace   | End  |       | PgDn |        |      |
- *                                 `--------------------'       `----------------------'
+ * ,------------------------------------------------------.       ,------------------------------------------------------.
+ * | Special `~ |   1  |   2  |   3  |   4  |   5  | ESC  |       |  -   |   6  |   7  |   8  |   9  |   0  | =+ Special |
+ * |------------+------+------+------+------+-------------|       |------+------+------+------+------+------+------------|
+ * | Media  Tab |   Q  |   W  |   E  |   R  |   T  |   [  |       |  ]   |   Y  |   U  |   I  |   O  |   P  | \|   Media |
+ * |------------+------+------+------+------+------|      |       |      |------+------+------+------+------+------------|
+ * | Symbol     |   A  |   S  |   D  |   F  |   G  |------|       |------|   H  |   J  |   K  |   L  |  ;   | '"  Symbol |
+ * |------------+------+------+------+------+------|Shift |       | Tab  |------+------+------+------+------+------------|
+ * | Capitals   |   Z  |   X  |   C  |   V  |   B  | -Tab |       |      |   N  |   M  |   ,  |   .  |  /   |   Capitals |
+ * `------------+------+------+------+------+-------------'       `-------------+------+------+------+------+------------'
+ *      | LCtrl | Meh  |Hyper | LAlt | LGui |                                   | RGui | RAlt | Hyper|  Meh | RCtrl |
+ *      `-----------------------------------'                                   `-----------------------------------'
+ *                                          ,-------------.       ,-------------.
+ *                                          | Home | End  |       | Left | Right|
+ *                                   ,------|------|------|       |------+------+------.
+ *                                   |      |      | PgUp |       |  Up  |      |      |
+ *                                   |Backsp| Del  |------|       |------| Enter| Space|
+ *                                   |      |      | PgDn |       | Down |      |      |
+ *                                   `--------------------'       `--------------------'
  */
-// If it accepts an argument (i.e, is a function), it doesn't need KC_.
-// Otherwise, it needs KC_*
-[BASE] = KEYMAP(  // layer 0 : default
-        // left hand
-        KC_EQL,         KC_1,         KC_2,   KC_3,   KC_4,   KC_5,   KC_LEFT,
-        KC_DELT,        KC_Q,         KC_W,   KC_E,   KC_R,   KC_T,   TG(SYMB),
-        KC_BSPC,        KC_A,         KC_S,   KC_D,   KC_F,   KC_G,
-        KC_LSFT,        CTL_T(KC_Z),  KC_X,   KC_C,   KC_V,   KC_B,   ALL_T(KC_NO),
-        LT(SYMB,KC_GRV),KC_QUOT,      LALT(KC_LSFT),  KC_LEFT,KC_RGHT,
-                                              ALT_T(KC_APP),  KC_LGUI,
-                                                              KC_HOME,
-                                               KC_SPC,KC_BSPC,KC_END,
-        // right hand
-             KC_RGHT,     KC_6,   KC_7,   KC_8,   KC_9,   KC_0,             KC_MINS,
-             TG(SYMB),    KC_Y,   KC_U,   KC_I,   KC_O,   KC_P,             KC_BSLS,
-                          KC_H,   KC_J,   KC_K,   KC_L,   LT(MDIA, KC_SCLN),GUI_T(KC_QUOT),
-             MEH_T(KC_NO),KC_N,   KC_M,   KC_COMM,KC_DOT, CTL_T(KC_SLSH),   KC_RSFT,
-                                  KC_UP,  KC_DOWN,KC_LBRC,KC_RBRC,          KC_FN1,
-             KC_LALT,        CTL_T(KC_ESC),
-             KC_PGUP,
-             KC_PGDN,KC_TAB, KC_ENT
+[BASE] = KEYMAP(
+// left hand
+ F(LSpec)  ,KC_1   ,KC_2   ,KC_3   ,KC_4  ,KC_5  ,KC_ESC
+,F(LMdia)  ,KC_Q   ,KC_W   ,KC_E   ,KC_R  ,KC_T  ,KC_LBRC
+,M(LSymb)  ,KC_A   ,KC_S   ,KC_D   ,KC_F  ,KC_G
+,KC_LSFT   ,KC_Z   ,KC_X   ,KC_C   ,KC_V  ,KC_B  ,LSFT(KC_TAB)
+,KC_LCTL   ,KC_MEH ,KC_HYPR,KC_LALT,KC_LGUI
+                                         ,KC_HOME,KC_END
+                                                 ,KC_PGUP
+                                 ,KC_BSPC,KC_DEL ,KC_PGDN
+                                                                  // right hand
+                                                                 ,KC_MINS ,KC_6   ,KC_7   ,KC_8   ,KC_9    ,KC_0     ,F(RSpec)
+                                                                 ,KC_RBRC ,KC_Y   ,KC_U   ,KC_I   ,KC_O    ,KC_P     ,F(RMdia)
+                                                                          ,KC_H   ,KC_J   ,KC_K   ,KC_L    ,KC_SCLN  ,F(RSymb)
+                                                                 ,KC_TAB  ,KC_N   ,KC_M   ,KC_COMM,KC_DOT  ,KC_SLSH  ,KC_RSFT
+                                                                                  ,KC_RGUI,KC_RALT,KC_HYPR ,KC_MEH   ,KC_RCTL
+                                                                 ,KC_LEFT ,KC_RGHT
+                                                                 ,KC_UP
+                                                                 ,KC_DOWN ,KC_ENT ,KC_SPC
     ),
-/* Keymap 1: Symbol Layer
+
+/******* Symbols Layer *************************************************************************************************
  *
- * ,--------------------------------------------------.           ,--------------------------------------------------.
- * |Version |  F1  |  F2  |  F3  |  F4  |  F5  |      |           |      |  F6  |  F7  |  F8  |  F9  |  F10 |   F11  |
- * |--------+------+------+------+------+-------------|           |------+------+------+------+------+------+--------|
- * |        |   !  |   @  |   {  |   }  |   |  |      |           |      |   Up |   7  |   8  |   9  |   *  |   F12  |
- * |--------+------+------+------+------+------|      |           |      |------+------+------+------+------+--------|
- * |        |   #  |   $  |   (  |   )  |   `  |------|           |------| Down |   4  |   5  |   6  |   +  |        |
- * |--------+------+------+------+------+------|      |           |      |------+------+------+------+------+--------|
- * |        |   %  |   ^  |   [  |   ]  |   ~  |      |           |      |   &  |   1  |   2  |   3  |   \  |        |
- * `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
- *   |      |      |      |      |      |                                       |      |    . |   0  |   =  |      |
- *   `----------------------------------'                                       `----------------------------------'
- *                                        ,-------------.       ,-------------.
- *                                        |      |      |       |      |      |
- *                                 ,------|------|------|       |------+------+------.
- *                                 |      |      |      |       |      |      |      |
- *                                 |      |      |------|       |------|      |      |
- *                                 |      |      |      |       |      |      |      |
- *                                 `--------------------'       `--------------------'
+ * ,-----------------------------------------------------.       ,-----------------------------------------------------.
+ * |           |  F1  |  F2  |  F3  |  F4  |  F5  | Esc  |       |  -   |  F6  |  F7  |  F8  |  F9  |  F10 |           |
+ * |-----------+------+------+------+------+-------------|       |------+------+------+------+------+------+-----------|
+ * |           |   !  |   @  |   {  |   }  |   &  |  <   |       |  >   |   |  |   7  |   8  |   9  |   /  |           |
+ * |-----------+------+------+------+------+------|      |       |      |------+------+------+------+------+-----------|
+ * |           |   #  |   $  |   (  |   )  |   `  |------|       |------|   /  |   4  |   5  |   6  |   *  |           |
+ * |-----------+------+------+------+------+------| Tab  |       | Shift|------+------+------+------+------+-----------|
+ * |           |   %  |   ^  |   [  |   ]  |   ~  |      |       |  -Tab|   \  |   1  |   2  |   3  |   -  |           |
+ * `-----------+------+------+------+------+-------------'       `-------------+------+------+------+------+-----------'
+ *     | LCtrl | Meh  |Hyper | LAlt | LGui |                                   |   0  |   .  |   =  |   +  |  Ent  |
+ *     `-----------------------------------'                                   `-----------------------------------'
+ *                                         ,-------------.       ,-------------.
+ *                                         | Left | Right|       | Home | End  |
+ *                                  ,------|------|------|       |------+------+------.
+ *                                  |      |      |  Up  |       | PgUp |      |      |
+ *                                  |Space |Enter |------|       |------|BackSp| Del  |
+ *                                  |      |      | Down |       | PgDn |      |      |
+ *                                  `--------------------'       `--------------------'
  */
-// SYMBOLS
 [SYMB] = KEYMAP(
-       // left hand
-       M(0),   KC_F1,  KC_F2,  KC_F3,  KC_F4,  KC_F5,  KC_TRNS,
-       KC_TRNS,KC_EXLM,KC_AT,  KC_LCBR,KC_RCBR,KC_PIPE,KC_TRNS,
-       KC_TRNS,KC_HASH,KC_DLR, KC_LPRN,KC_RPRN,KC_GRV,
-       KC_TRNS,KC_PERC,KC_CIRC,KC_LBRC,KC_RBRC,KC_TILD,KC_TRNS,
-       KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,
-                                       KC_TRNS,KC_TRNS,
-                                               KC_TRNS,
-                               KC_TRNS,KC_TRNS,KC_TRNS,
-       // right hand
-       KC_TRNS, KC_F6,   KC_F7,  KC_F8,   KC_F9,   KC_F10,  KC_F11,
-       KC_TRNS, KC_UP,   KC_7,   KC_8,    KC_9,    KC_ASTR, KC_F12,
-                KC_DOWN, KC_4,   KC_5,    KC_6,    KC_PLUS, KC_TRNS,
-       KC_TRNS, KC_AMPR, KC_1,   KC_2,    KC_3,    KC_BSLS, KC_TRNS,
-                         KC_TRNS,KC_DOT,  KC_0,    KC_EQL,  KC_TRNS,
-       KC_TRNS, KC_TRNS,
-       KC_TRNS,
-       KC_TRNS, KC_TRNS, KC_TRNS
+// left hand
+ KC_TRNS ,KC_F1   ,KC_F2   ,KC_F3   ,KC_F4   ,KC_F5   ,KC_ESC
+,KC_TRNS ,KC_EXLM ,KC_AT   ,KC_LCBR ,KC_RCBR ,KC_AMPR ,LSFT(KC_COMM)
+,KC_TRNS ,KC_HASH ,KC_DLR  ,KC_LPRN ,KC_RPRN ,KC_GRV
+,KC_TRNS ,KC_PERC ,KC_CIRC ,KC_LBRC ,KC_RBRC ,KC_TILD ,KC_TAB
+,KC_LCTL ,KC_MEH  ,KC_HYPR ,KC_LALT ,KC_LGUI
+                                             ,KC_LEFT ,KC_RGHT
+                                                      ,KC_UP
+                                    ,KC_SPC  ,KC_ENT  ,KC_DOWN
+                                                                 // right hand
+                                                                 ,KC_MINS     ,KC_F6   ,KC_F7 ,KC_F8  ,KC_F9 ,KC_F10  ,KC_TRNS
+                                                                 ,LSFT(KC_DOT),KC_PIPE ,KC_7  ,KC_8   ,KC_9  ,KC_SLSH ,KC_TRNS
+                                                                              ,KC_SLSH ,KC_4  ,KC_5   ,KC_6  ,KC_ASTR ,KC_TRNS
+                                                                 ,LSFT(KC_TAB),KC_BSLS ,KC_1  ,KC_2   ,KC_3  ,KC_MINS ,KC_TRNS
+                                                                                       ,KC_0  ,KC_DOT ,KC_EQL,KC_PLUS ,KC_ENT
+                                                                 ,KC_HOME     ,KC_END
+                                                                 ,KC_PGUP
+                                                                 ,KC_PGDN     ,KC_BSPC ,KC_DEL
 ),
-/* Keymap 2: Media and mouse keys
+
+/******* Media Layer *******************************************************************************************************
  *
- * ,--------------------------------------------------.           ,--------------------------------------------------.
- * |        |      |      |      |      |      |      |           |      |      |      |      |      |      |        |
- * |--------+------+------+------+------+-------------|           |------+------+------+------+------+------+--------|
- * |        |      |      | MsUp |      |      |      |           |      |      |      |      |      |      |        |
- * |--------+------+------+------+------+------|      |           |      |------+------+------+------+------+--------|
- * |        |      |MsLeft|MsDown|MsRght|      |------|           |------|      |      |      |      |      |  Play  |
- * |--------+------+------+------+------+------|      |           |      |------+------+------+------+------+--------|
- * |        |      |      |      |      |      |      |           |      |      |      | Prev | Next |      |        |
- * `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
- *   |      |      |      | Lclk | Rclk |                                       |VolUp |VolDn | Mute |      |      |
- *   `----------------------------------'                                       `----------------------------------'
- *                                        ,-------------.       ,-------------.
- *                                        |      |      |       |      |      |
- *                                 ,------|------|------|       |------+------+------.
- *                                 |      |      |      |       |      |      |Brwser|
- *                                 |      |      |------|       |------|      |Back  |
- *                                 |      |      |      |       |      |      |      |
- *                                 `--------------------'       `--------------------'
+ * ,---------------------------------------------------------------.    ,---------------------------------------------------------------.
+ * |      |   F11   |   F12   |   F13   |   F14   |   F15   | Esc  |    |      |   F16   |   F17   |   F18   |   F19   |   F20   |      |
+ * |------+---------+---------+---------+---------+----------------|    |------+---------+---------+---------+---------+---------+------|
+ * |      |Shut Down|MouseUpLf|Mouse Up |MouseUpRg|Volume Up|Scroll|    |Scroll|PrintScrn|   Home  |    Up   |   PgUp  |   Mail  |      |
+ * |------+---------+---------+---------+---------+---------|  Up  |    |  Up  |---------+---------+---------+---------+---------+------|
+ * |      |  Sleep  |MouseLeft|MouseDown|MouseRght|Volume Dn|------|    |------| Num Lock|   Left  |   Down  |   Right | MyComp  |      |
+ * |------+---------+---------+---------+---------+---------|Scroll|    |Scroll|---------+---------+---------+---------+---------+------|
+ * |      |         |MouseDnLf|MouseDown|MouseDnRg|  Mute   | Down |    | Down |         |   End   |   Down  |   PgDn  |         |      |
+ * `------+---------+---------+---------+---------+----------------'    `----------------+---------+---------+---------+---------+------'
+ *  |LCtrl|   Meh   |  MClick | LClick  |  R Click|                                      |Cmd/Insrt|Optn/Del | Hyper   |  Meh    |RCtrl|
+ *  `---------------------------------------------'                                      `---------------------------------------------'
+ *                                                   ,-------------.    ,-------------.
+ *                                                   | Stop |Refrsh|    | Prev | Next |
+ *                                            ,------|------|------|    |------+------+------.
+ *                                            |Brwser|Brwser|Search|    |VolUp |      |      |
+ *                                            |Back  | Fwd  |------|    |------| Stop | Play-|
+ *                                            |      |      | Home |    |VolDn |      | Pause|
+ *                                            `--------------------'    `--------------------'
  */
-// MEDIA AND MOUSE
 [MDIA] = KEYMAP(
-       KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-       KC_TRNS, KC_TRNS, KC_TRNS, KC_MS_U, KC_TRNS, KC_TRNS, KC_TRNS,
-       KC_TRNS, KC_TRNS, KC_MS_L, KC_MS_D, KC_MS_R, KC_TRNS,
-       KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-       KC_TRNS, KC_TRNS, KC_TRNS, KC_BTN1, KC_BTN2,
-                                           KC_TRNS, KC_TRNS,
-                                                    KC_TRNS,
-                                  KC_TRNS, KC_TRNS, KC_TRNS,
-    // right hand
-       KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-       KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_MPLY,
-       KC_TRNS,  KC_TRNS, KC_TRNS, KC_MPRV, KC_MNXT, KC_TRNS, KC_TRNS,
-                          KC_VOLU, KC_VOLD, KC_MUTE, KC_TRNS, KC_TRNS,
-       KC_TRNS, KC_TRNS,
-       KC_TRNS,
-       KC_TRNS, KC_TRNS, KC_WBAK
+// left hand
+ KC_TRNS ,KC_F11   ,KC_F12  ,KC_F13   ,KC_F14  ,KC_F15  ,KC_ESC
+,KC_TRNS ,KC_POWER ,M(MUL)  ,KC_MS_U  ,M(MUR)  ,KC_VOLU ,KC_WH_U
+,KC_TRNS ,KC_SLEP  ,KC_MS_L ,KC_MS_D  ,KC_MS_R ,KC_VOLD
+,KC_TRNS ,KC_NO    ,M(MDL)  ,KC_MS_D  ,M(MDR)  ,KC_MUTE ,KC_WH_D
+,KC_LCTL ,KC_MEH   ,KC_BTN3 ,KC_BTN1  ,KC_BTN2
+                                               ,KC_WSTP ,KC_WREF
+                                                        ,KC_WSCH
+                                      ,KC_WBAK ,KC_NO   ,KC_WHOM
+                                                                     // right hand
+                                                                     ,KC_NO    ,KC_F16  ,KC_F17       ,KC_F18       ,KC_F19  ,KC_F20  ,KC_TRNS
+                                                                     ,KC_WH_U  ,KC_PSCR ,KC_HOME      ,KC_UP        ,KC_PGUP ,KC_MAIL ,KC_TRNS
+                                                                               ,KC_NLCK ,KC_LEFT      ,KC_DOWN      ,KC_RIGHT,KC_MYCM ,KC_TRNS
+                                                                     ,KC_WH_D  ,KC_NO   ,KC_END       ,KC_DOWN      ,KC_PGDN ,KC_NO   ,KC_TRNS
+                                                                                        ,GUI_T(KC_INS),ALT_T(KC_DEL),KC_HYPR ,KC_MEH  ,KC_RCTL
+                                                                     ,KC_MPRV  ,KC_MNXT
+                                                                     ,KC_VOLU
+                                                                     ,KC_VOLD  ,KC_MSTP ,KC_MPLY
 ),
+
+/******* Special Layer *****************************************************************************************************
+ *
+ * ,-------------------------------------------------------.    ,-------------------------------------------------------.
+ * |             |  Esc |      |      |      |      |      |    |      |      |      |      |   -  | Bspc |             |
+ * |-------------+------+------+------+------+-------------|    |------+------+------+------+------+------+-------------|
+ * | Media Lock  |      |      |      |      |      |      |    |      |      |      |      |  [   |   ]  | Media Lock  |
+ * |-------------+------+------+------+------+------|      |    |      |------+------+------+------+------+-------------|
+ * | Symbol Lock |      |      |      |      |      |------|    |------|      |      |      |      |      | Symbol Lock |
+ * |-------------+------+------+------+------+------|      |    |      |------+------+------+------+------+-------------|
+ * | Caps Lock   |      |      |      |      |      |      |    |      |      |      |      |      |      | Caps Lock   |
+ * `-------------+------+------+------+------+-------------'    `-------------+------+------+------+------+-------------'
+ *      |        |      |      |      |      |                                |      |      |      |      |        |
+ *      `------------------------------------'                                `------------------------------------'
+ *                                         ,-------------.     ,-------------.
+ *                                         |      |      |     |      |      |
+ *                                  ,------|------|------|     |------+------+------.
+ *                                  |      |      |      |     |      |      |      |
+ *                                  |      |      |------|     |------|      |      |
+ *                                  |      |      |      |     |      |      |      |
+ *                                  `--------------------'     `--------------------'
+ */
+[SPEC] = KEYMAP(
+// left hand
+ KC_TRNS ,KC_ESC  ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+,KC_CAPS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+                                             ,KC_TRNS ,KC_TRNS
+                                                      ,KC_TRNS
+                                     ,KC_TRNS,KC_TRNS ,KC_TRNS
+                                                             // right hand
+                                                             ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_MINS ,KC_BSPC ,KC_TRNS
+                                                             ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_LBRC ,KC_RBRC ,KC_TRNS
+                                                                      ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+                                                             ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_CAPS
+                                                                               ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS ,KC_TRNS
+                                                             ,KC_TRNS ,KC_TRNS
+                                                             ,KC_TRNS
+                                                             ,KC_TRNS ,KC_TRNS ,KC_TRNS
+    )
 };
 
 const uint16_t PROGMEM fn_actions[] = {
-    [1] = ACTION_LAYER_TAP_TOGGLE(SYMB)                // FN1 - Momentary Layer 1 (Symbols)
+     // the faux shift keys are implemented as macro taps
+     [LSymb] = ACTION_MACRO_TAP(LSymb)
+    ,[LMdia] = ACTION_MACRO_TAP(LMdia)
+    ,[LSpec] = ACTION_MACRO_TAP(LSpec)
+    ,[RSymb] = ACTION_MACRO_TAP(RSymb)
+    ,[RMdia] = ACTION_MACRO_TAP(RMdia)
+    ,[RSpec] = ACTION_MACRO_TAP(RSpec)
 };
+
+uint16_t symb_shift = 0;
+uint16_t mdia_shift = 0;
+uint16_t spec_shift = 0;
+
+bool mdia_lock = false;
+bool symb_lock = false;
 
 const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
 {
-  // MACRODOWN only works in this function
-      switch(id) {
-        case 0:
-        if (record->event.pressed) {
-          SEND_STRING (QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION);
+    switch(id) {
+        // There are two shift keys for each layer so we increment a layer_shift var when one
+        // is pressed and decrement when one is released. If both are pressed at the same time
+        // then the layer is locked (or unlocked). The shift counts are bound between 0 and 2
+        // only because sometimes rapid pressing led to irregular events; this way the states
+        // are self healing during use.
+
+        case LSymb:                                               //
+        if (record->event.pressed) {                              // when the LSymb button is pressed
+            if(++symb_shift > 2) mdia_shift = 2;                  // increment the symb shift count, max two
+            if(spec_shift) symb_lock = !symb_lock;                // if the Special layer is on, toggle the shift lock
+            layer_on(SYMB);                                       // in any case, turn on the Symbols layer
+        } else {                                                  // when the LSymb button is released
+            if(--symb_shift < 0) symb_shift = 0;                  // decrement the shift count, minimum zero
+            if((!symb_shift) && (!symb_lock)) layer_off(SYMB);    // if both shifts are released and the lock is off, turn off the Symbols layer
         }
         break;
-      }
+
+        case LMdia:
+        if (record->event.pressed) {
+           if (record->tap.count && (!mdia_shift) && (!mdia_lock) && (!spec_shift)) {
+                register_code(KC_TAB);
+            } else {
+                if(spec_shift) mdia_lock = !mdia_lock;
+                if(++mdia_shift > 2) mdia_shift = 2;
+                layer_on(MDIA);
+            }
+        } else {
+            if(record->tap.count && (!mdia_shift) && (!mdia_lock) && (!spec_shift)) {
+                unregister_code(KC_TAB);
+            } else {
+                if(--mdia_shift < 0) mdia_shift = 0;
+                if((!mdia_shift) && (!mdia_lock)) layer_off(MDIA);
+            }
+        }
+        break;
+
+        case LSpec:
+        if (record->event.pressed) {                                     // when the LSpec button is pressed
+            if(symb_shift) symb_lock == !symb_lock;                      // if another layer button is engaged, then
+            else if(mdia_shift) mdia_lock = !mdia_lock;                  // lock that layer, be it caps or symb or mdia
+            else if (record->tap.count && !record->tap.interrupted && (!spec_shift)) {
+                register_code(KC_GRV);                                   // otherwise, if it's an uninterrupted tap, emit a char
+            } else {
+                if(++spec_shift > 2) spec_shift = 2;
+                layer_on(SPEC);                                          // otherwise, turn on the Special layer
+            }
+        } else {
+            if(record->tap.count && !record->tap.interrupted && (!spec_shift)) {
+                unregister_code(KC_GRV);
+            } else {
+                if(--spec_shift < 0) spec_shift = 0;
+                if(!spec_shift) layer_off(SPEC);
+            }
+        }
+        break;
+
+        case RSymb:
+        if (record->event.pressed) {
+            if (record->tap.count && (!symb_shift) && (!symb_lock) && (!spec_shift)) {
+                register_code(KC_QUOT);
+            } else {
+                if(++symb_shift > 2) symb_shift = 2;
+                if(spec_shift) symb_lock = !symb_lock;
+                layer_on(SYMB);
+            }
+        } else {
+            if(record->tap.count && (!symb_shift) && (!symb_lock) && (!spec_shift)) {
+                unregister_code(KC_QUOT);
+            } else {
+                if(--symb_shift < 0) symb_shift = 0;
+                if((!symb_shift) && (!symb_lock)) layer_off(SYMB);
+            }
+        }
+        break;
+
+        case RMdia:
+        if (record->event.pressed) {
+            if (record->tap.count && (!mdia_shift) && (!mdia_lock) && (!spec_shift)) {
+                register_code(KC_BSLS);
+            } else {
+                if(++mdia_shift > 2) mdia_shift = 2;
+                if(spec_shift) mdia_lock = !mdia_lock;
+                layer_on(MDIA);
+            }
+        } else {
+            if(record->tap.count && (!mdia_shift) && (!mdia_lock) && (!spec_shift)) {
+                unregister_code(KC_BSLS);
+            } else {
+                if(--mdia_shift < 0) mdia_shift = 0;
+                if((!mdia_shift) && (!mdia_lock)) layer_off(MDIA);
+            }
+        }
+        break;
+
+        case RSpec:
+        if (record->event.pressed) {
+            if(symb_shift) symb_lock = !symb_lock;
+            else if(mdia_shift) mdia_lock = !mdia_lock;
+            else if (record->tap.count && !record->tap.interrupted && (!spec_shift)) {
+                register_code(KC_EQL);
+            } else {
+                if(++spec_shift > 2) spec_shift = 2;
+                layer_on(SPEC);
+            }
+        } else {
+            if(record->tap.count && !record->tap.interrupted && (!spec_shift)) {
+                unregister_code(KC_EQL);
+            } else {
+                if(--spec_shift < 0) spec_shift = 0;
+                if(!spec_shift) layer_off(SPEC);
+            }
+        }
+        break;
+
+        // mouse diagonals
+
+        case MUL: // mouse up left
+        if (record->event.pressed) {
+            mousekey_on(KC_MS_UP);
+            mousekey_on(KC_MS_LEFT);
+            mousekey_send();
+        } else {
+            mousekey_off(KC_MS_UP);
+            mousekey_off(KC_MS_LEFT);
+            mousekey_send();
+        }
+        break;
+
+        case MUR: // mouse up right
+        if (record->event.pressed) {
+            mousekey_on(KC_MS_UP);
+            mousekey_on(KC_MS_RIGHT);
+            mousekey_send();
+        } else {
+            mousekey_off(KC_MS_UP);
+            mousekey_off(KC_MS_RIGHT);
+            mousekey_send();
+        }
+        break;
+
+        case MDL: // mouse down left
+        if (record->event.pressed) {
+            mousekey_on(KC_MS_DOWN);
+            mousekey_on(KC_MS_LEFT);
+            mousekey_send();
+        } else {
+            mousekey_off(KC_MS_DOWN);
+            mousekey_off(KC_MS_LEFT);
+            mousekey_send();
+        }
+        break;
+
+        case MDR: // mouse down right
+        if (record->event.pressed) {
+            mousekey_on(KC_MS_DOWN);
+            mousekey_on(KC_MS_RIGHT);
+            mousekey_send();
+        } else {
+            mousekey_off(KC_MS_DOWN);
+            mousekey_off(KC_MS_RIGHT);
+            mousekey_send();
+        }
+        break;
+
+        default:
+            // none
+            break;
+    }
+
     return MACRO_NONE;
 };
 
@@ -160,24 +404,26 @@ void matrix_init_user(void) {
 
 // Runs constantly in the background, in a loop.
 void matrix_scan_user(void) {
-
-    uint8_t layer = biton32(layer_state);
-
-    ergodox_board_led_off();
-    ergodox_right_led_1_off();
-    ergodox_right_led_2_off();
-    ergodox_right_led_3_off();
-    switch (layer) {
-      // TODO: Make this relevant to the ErgoDox EZ.
-        case 1:
-            ergodox_right_led_1_on();
-            break;
-        case 2:
-            ergodox_right_led_2_on();
-            break;
-        default:
-            // none
-            break;
+    // shift or caps lock turns on red light
+    if((keyboard_report->mods & MOD_BIT(KC_LSFT))
+    || (keyboard_report->mods & MOD_BIT(KC_RSFT))
+    || (host_keyboard_leds() & (1<<USB_LED_CAPS_LOCK))) {
+        ergodox_right_led_1_on();
+    } else {
+        ergodox_right_led_1_off();
     }
 
+    // Symbol layer turns on green light
+    if(layer_state & (1UL<<SYMB)) {
+        ergodox_right_led_2_on();
+    } else {
+        ergodox_right_led_2_off();
+    }
+
+    // Media layer turns on blue light
+    if(layer_state & (1UL<<MDIA)) {
+        ergodox_right_led_3_on();
+    } else {
+        ergodox_right_led_3_off();
+    }
 };
